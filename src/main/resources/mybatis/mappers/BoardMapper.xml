@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.test.board.dao.BoardDAO">
+	<resultMap type="boardVO" id="boardResult">
+		<result property="pcode" column="post_code" />
+		<result property="ptitle" column="post_title" />
+		<result property="pcontent" column="post_content" />
+		<result property="price" column="post_price" />
+		<result property="pnumber" column="post_number" />
+		<result property="scode" column="seller_code" />
+		<result property="cacode" column="category_code" />
+		<result property="stcode" column="post_status_code" />
+		<result property="tcode" column="town_code" />
+		<result property="insertTime" column="insert_time" />
+		
+		<result property="imageUrl" column="file_url" />
+		<result property="imageName" column="file_name" />
+	</resultMap>
+	
+	<sql id="boardColumns">
+		post_code,
+		post_title,
+		post_content,
+		post_price,
+		post_number,
+		seller_code,
+		category_code,
+		post_status_code,
+		town_code,
+		insert_time,
+		file_url,
+		file_name
+	</sql>
+	
+	<!-- 게시글 목록 -->
+	<select id="selectPostList" parameterType="boardVO" resultMap="boardResult">
+	SELECT *
+	FROM posttbl
+	ORDER BY insert_time DESC, post_code DESC
+	</select>
+	
+	<!-- 게시글 추가 -->
+	<insert id="insertPost" parameterType="boardVO" useGeneratedKeys="true" keyProperty="pcode">
+	INSERT INTO posttbl ( <include refid="boardColumns" /> )
+	VALUES (
+		#{pcode}, #{ptitle}, #{pcontent}, #{price},
+		0, #{scode}, 0, 0, 0, current_date(), #{imageUrl}, #{imageName}
+	)
+	</insert>
+	
+	<!-- 게시글 상세보기 -->
+	<select id="selectPostOne" resultMap="boardResult">
+	SELECT *
+	FROM posttbl
+	WHERE post_code = #{pcode}
+	</select>
+	
+	<!-- 게시글 수정 -->
+	<update id="updatePost" parameterType="boardVO">
+	UPDATE posttbl
+	SET post_title = #{ptitle}, post_content = #{pcontent}, post_price = #{price}, category_code = #{cacode}
+	WHERE post_code = #{pcode}
+	</update>
+	
+	<!-- 게시글 삭제 -->
+	<delete id="deletePost">
+	DELETE
+	FROM posttbl
+	WHERE post_code = #{pcode}
+	</delete>
+	
+	<select id="selectTotalCount" resultType="int">
+	SELECT count(*)
+	FROM posttbl
+	</select>
+	
+	<!-- 조회수 증가 -->
+	<update id="updatePnumber">
+	UPDATE posttbl
+	SET post_number = post_number + 1
+	WHERE post_code = #{pcode}
+	</update>
+	
+	<!-- user 이름 가져오기 -->
+	<select id="selectMemberName" resultType="String">
+	SELECT DISTINCT(m.name)
+	FROM usertbl m
+	JOIN post p ON p.seller_code = m.memberCode
+	WHERE p.seller_code = #{scode};
+	</select>
+	
+	<!-- post_status 변경 -->
+	<update id="updateStcode">
+	UPDATE posttbl
+	SET post_status_code = 1
+	WHERE post_code = #{pcode}
+	</update>
+	
+</mapper>
